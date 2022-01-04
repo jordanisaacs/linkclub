@@ -13,7 +13,7 @@ async fn add_user_returns_200_for_valid_form() {
 
     body = "username=hello&email=world%40gmail.com";
     response = client
-        .post(&format!("{}/user", &app.address))
+        .post(&format!("{}/api/user", &app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
@@ -22,7 +22,7 @@ async fn add_user_returns_200_for_valid_form() {
 
     assert_eq!(200, response.status().as_u16());
 
-    saved = sqlx::query!("select username, email from axumstarter.user",)
+    saved = sqlx::query!("select username, email from linkclub.app_user",)
         .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch new user.");
@@ -49,7 +49,7 @@ async fn add_user_returns_400_for_valid_form() {
         let response;
 
         response = client
-            .post(&format!("{}/user", &app.address))
+            .post(&format!("{}/api/user", &app.address))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(invalid_body)
             .send()

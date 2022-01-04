@@ -1,27 +1,28 @@
 {
-  #description = "DaySquare rust dev environment";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    nix-dart.url = "github:tadfisher/nix-dart";
   };
 
-  outputs = { self, nixpkgs, utils, rust-overlay, ... }:
+  outputs = { self, nixpkgs, utils, rust-overlay, nix-dart, ... }:
     let
       system = "x86_64-linux";
       overlays = [ (import rust-overlay) ];
       pkgs = import nixpkgs {
         inherit system overlays;
       };
+
     in
     {
       devShell."${system}" =
         let
-          db_user = "axumstarter";
-          db_password = "axumstarter";
+          db_user = "linkclub";
+          db_password = "linkclub";
           db_port = 5432;
-          db_name = "axumstarter";
-          db_container_name = "starterDB";
+          db_name = "linkclub";
+          db_container_name = "linkclubDB";
 
           server_port = 8080;
 
@@ -43,7 +44,7 @@
           # Using extra-containers to run postgres database
           containers =
             let
-              dbInit = pkgs.writeText "axumDBInitScript" ''
+              dbInit = pkgs.writeText "linkclubDBInitScript" ''
                 CREATE USER ${db_user} WITH LOGIN ENCRYPTED PASSWORD ${"'" + db_password + "'"} CREATEDB;
                 CREATE DATABASE ${db_name};
                 GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};
@@ -83,23 +84,47 @@
         in
         pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
-            pkg-config
-
+            # rust. compile to wasm and linux
             (rust-bin.stable.latest.default.override {
-              targets = [ "x86_64-unknown-linux-gnu" ];
+              targets = [ "wasm32-unknown-unknown" "x86_64-unknown-linux-gnu" ];
             })
 
-            # Rust Cargo & Tools
+            # Rust Cargo tools
             cargo
             cargo-edit
             cargo-audit
             cargo-tarpaulin
-            cargo-udeps
             clippy
 
-            # Database
+            (nix-dart.builders.${system}.buildDartPackage rec {
+              pname = "dart-sass";
+              version = "1.45.2";
+
+              src = fetchFromGitHub {
+                owner = "sass";
+                repo = pname;
+                rev = version;
+                hash = "sha256-9RzWFsM5C9vaSx/1NG6bDOmvxVlzk5tVn7haK5dsnX8=";
+              };
+
+              specFile = "${src}/pubspec.yaml";
+              lockFile = ./pub2nix.lock;
+
+              meta = with lib; {
+                description = "The reference implementation of Sass, written in Dart";
+                homepage = "https://sass-lang.com/dart-sass";
+                maintainers = [ maintainers.tadfisher ];
+                license = licenses.mit;
+              };
+            }
+            )
+
+            # Frontend builder
+            trunk
+
+            # database
             sqlx-cli
-            postgresql # (for psql)
+            postgresql # (for psql command)
 
             # Server logs formatter
             bunyan-rs

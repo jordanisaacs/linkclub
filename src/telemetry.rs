@@ -20,13 +20,11 @@ pub fn get_subscriber(
     env_filter: String,
     sink: impl MakeWriter + Send + Sync + 'static,
 ) -> impl Subscriber + Send + Sync {
-    let formatting_layer;
-
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
 
     // Formats information in the Bunyan Format. Relies on JsonStorageLayer for field access
-    formatting_layer = BunyanFormattingLayer::new(name, sink);
+    let formatting_layer = BunyanFormattingLayer::new(name, sink);
 
     Registry::default()
         .with(env_filter)
@@ -47,21 +45,16 @@ pub struct AxumMakeSpan();
 
 impl<B> MakeSpan<B> for AxumMakeSpan {
     fn make_span(&mut self, req: &Request<B>) -> Span {
-        let user_agent;
-        let http_method;
-        let target;
-        let span;
-
-        user_agent = req
+        let user_agent = req
             .headers()
             .get("User-Agent")
             .map(|h| h.to_str().unwrap_or(""))
             .unwrap_or("");
 
-        http_method = http_method_str(req.method());
-        target = req.uri().path_and_query().map(|p| p.as_str()).unwrap_or("");
+        let http_method = http_method_str(req.method());
+        let target = req.uri().path_and_query().map(|p| p.as_str()).unwrap_or("");
 
-        span = tracing::info_span!(
+        let span = tracing::info_span!(
             "HTTP Request",
             http.method = %http_method,
             http.user_agent = %user_agent,

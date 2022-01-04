@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
 };
 use serde::Deserialize;
+use sqlx::types::time::OffsetDateTime;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -35,10 +36,11 @@ pub async fn add_user(
 pub async fn insert_user(pool: &PgPool, form: &AddUser) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
-        insert into axumstarter.user (id, username, email)
-        values ($1, $2, $3)
+        insert into linkclub.app_user (id, time_created, username, email)
+        values ($1, $2, $3, $4)
         "#,
         Uuid::new_v4(),
+        OffsetDateTime::now_utc(),
         form.username,
         form.email
     )

@@ -1,4 +1,4 @@
-use axum_starter::{
+use linkclub::{
     configuration::{get_configuration, DatabaseSettings},
     run,
     telemetry::{get_subscriber, init_subscriber},

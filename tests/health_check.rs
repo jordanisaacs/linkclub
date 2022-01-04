@@ -9,7 +9,7 @@ async fn health_check_works() {
     app = helper::spawn_app().await;
     client = reqwest::Client::new();
     response = client
-        .get(&format!("{}/health_check", &app.address))
+        .get(&format!("{}/api/health_check", &app.address))
         .send()
         .await
         .expect("Failed to execute request");

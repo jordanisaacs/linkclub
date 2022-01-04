@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use axum_starter::{
+use linkclub::{
     configuration::get_configuration,
     telemetry::{get_subscriber, init_subscriber},
 };
@@ -23,13 +23,13 @@ async fn main() -> hyper::Result<()> {
         .await
         .expect("Failed to connect to Postgres.");
 
-    subscriber = get_subscriber("axum-starter".into(), "info".into(), std::io::stdout);
+    subscriber = get_subscriber("linkclub-subscriber".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
 
     listener =
         TcpListener::bind(configuration.server.public_addr()).expect("Failed to bind to address");
 
-    server = axum_starter::run(listener, connection_pool)?;
+    server = linkclub::run(listener, connection_pool)?;
 
     server.await
 }
