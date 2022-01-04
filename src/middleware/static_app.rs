@@ -12,6 +12,7 @@ use std::{
 };
 use tower::{Layer, Service, ServiceExt};
 use tower_http::services::ServeDir;
+use tracing::Level;
 
 /// [`Layer`] for adding file serving to a router
 #[derive(Debug, Clone)]
@@ -56,8 +57,8 @@ where
     type Error = S::Error;
     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
+    fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
     }
 
     fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
@@ -68,14 +69,14 @@ where
 
         let dir_path = self.dir_path.clone();
         let clone = self.inner.clone();
-        let mut inner = std::mem::replace(&mut self.inner, clone);
+        let inner = std::mem::replace(&mut self.inner, clone);
 
         Box::pin(async move {
             match ServeDir::new(dir_path).oneshot(file_req).await {
                 Ok(res) => {
                     if res.status() == StatusCode::NOT_FOUND {
-                        let res = inner.call(req).await?;
-                        Ok(res.map(boxed))
+                        let new_res = inner.oneshot(req).await?;
+                        Ok(new_res.map(boxed))
                     } else {
                         Ok(res.map(boxed))
                     }

@@ -607,6 +607,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "html-escape"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "816ea801a95538fc5f53c836697b3f8b64a9d664c4f0b91efe1fe7c92e4dbcb7"
+dependencies = [
+ "utf8-width",
+]
+
+[[package]]
 name = "http"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -857,6 +866,7 @@ dependencies = [
  "reqwest",
  "serde 1.0.130",
  "sqlx",
+ "sycamore",
  "tokio",
  "tower",
  "tower-http",
@@ -1721,9 +1731,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5cea65876897bb946a623e16bf3df2de4997a6872d95b99dfaed5dd8e14e264"
 dependencies = [
  "ahash",
+ "html-escape",
  "indexmap",
  "js-sys",
  "lexical",
+ "once_cell",
  "paste",
  "smallvec",
  "sycamore-macro",
@@ -2195,6 +2207,12 @@ dependencies = [
  "matches",
  "percent-encoding",
 ]
+
+[[package]]
+name = "utf8-width"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cf7d77f457ef8dfa11e4cd5933c5ddb5dc52a94664071951219a97710f0a32b"
 
 [[package]]
 name = "uuid"

@@ -31,11 +31,11 @@ pub fn run(
         .route("/user", post(add_user))
         .layer(db_layer);
 
-    let app: Router<Body> = Router::new()
-        .layer(middleware::static_app::StaticAppLayer::new(
-            "app/dist".to_string(),
-        ))
-        .route("/user", post(add_user));
+    //let app: Router<Body> = Router::new()
+    //    .layer(middleware::static_app::StaticAppLayer::new(
+    //        "app/dist".to_string(),
+    //    ))
+    //    .route("/", get(static_app));
 
     //let test1 = ServiceBuilder::new()
     //    .map_err(|err: std::io::Error| StaticAppError::IoError(err.to_string()))
@@ -57,15 +57,21 @@ pub fn run(
     //
     //let test = Router::new().layer(ServiceBuilder::new("app/dist"));
 
-    let router = Router::new().nest("/api", api).nest("/app", app).layer(
-        TraceLayer::new_for_http()
-            .make_span_with(AxumMakeSpan())
-            .on_request(AxumOnRequest)
-            .on_response(AxumOnResponse)
-            .on_body_chunk(())
-            .on_eos(())
-            .on_failure(AxumOnFailure),
-    );
+    let router = Router::new()
+        .nest("/api", api)
+        .layer(middleware::static_app::StaticAppLayer::new(
+            "app/dist".to_string(),
+        ))
+        .route("/", get(static_app))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(AxumMakeSpan())
+                .on_request(AxumOnRequest)
+                .on_response(AxumOnResponse)
+                .on_body_chunk(())
+                .on_eos(())
+                .on_failure(AxumOnFailure),
+        );
 
     let server = Server::from_tcp(listener)?.serve(router.into_make_service());
 

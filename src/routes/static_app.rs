@@ -1,13 +1,27 @@
-//use crate::routes::extractors;
-//use axum::{
-//    body::{box_body, Body, BoxBody},
-//    handler::Handler,
-//    http::{Request, Response, StatusCode, Uri},
-//};
-//use tower::{util::AndThen, Service, ServiceBuilder, ServiceExt};
-//use tower_http::services::fs::{ServeDir, ServeFileSystemResponseBody};
+use axum::{
+    http::{StatusCode, Uri},
+    response::{Html, Response},
+};
+use sycamore::prelude::*;
+use tokio::fs::read;
 
-const FILE_DIR: &str = "./app/dist";
+pub async fn static_app(uri: Uri) -> Result<Html<String>, StatusCode> {
+    let index_html = String::from_utf8(
+        read("app/dist/index.html")
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+    )
+    .expect("index.html should be valid utf-8");
+
+    let rendered = sycamore::render_to_string(|| {
+        view! {
+            app::App()
+        }
+    });
+
+    let index_html = index_html.replace("%sycamore.body", &rendered);
+    Ok(Html(index_html))
+}
 
 //
 //
